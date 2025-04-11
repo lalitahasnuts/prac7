@@ -5,58 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesList = document.getElementById('notes-list');
     const offlineMessage = document.getElementById('offline-message');
 
-    // Функция для добавления заметки
-    function addNote(note) {
-        const li = document.createElement('li');
-        li.className = 'note-item';
-        li.innerText = note.text;
-        const deleteButton = document.createElement('span');
-        deleteButton.className = 'delete-button';
-        deleteButton.innerText = '×';
-        deleteButton.addEventListener('click', () => removeNote(li));
-        li.appendChild(deleteButton);
-        notesList.appendChild(li);
-    }
-
-    // Функция для удаления заметки
-    function removeNote(element) {
-        element.remove();
-    }
-
-    // Событие отправки формы
-    noteForm.addEventListener('submit', e => {
-        e.preventDefault();
-        if (noteTextarea.value.trim() !== '') {
-            addNote({ text: noteTextarea.value });
-            noteTextarea.value = '';
-        }
-    });
-
-    // Проверка состояния сети
-    window.addEventListener('online', () => {
-        offlineMessage.style.display = 'none';
-    });
-
-    window.addEventListener('offline', () => {
-        offlineMessage.style.display = 'block';
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const noteForm = document.getElementById('note-form');
-    const noteTextarea = document.getElementById('note-textarea');
-    const notesList = document.getElementById('notes-list');
-    const offlineMessage = document.getElementById('offline-message');
-
     // Загрузка заметок из LocalStorage
     function loadNotesFromStorage() {
         let notes = localStorage.getItem('notes');
-        if (!notes) {
-            notes = [];
-        } else {
-            notes = JSON.parse(notes);
-        }
-        return notes;
+        return notes ? JSON.parse(notes) : [];
     }
 
     // Сохранение заметок в LocalStorage
@@ -80,6 +32,17 @@ document.addEventListener('DOMContentLoaded', () => {
         renderNotes();
     }
 
+    // Изменение заметки
+    function editNote(index) {
+        const notes = loadNotesFromStorage();
+        const newText = prompt("Измените заметку:", notes[index].text);
+        if (newText !== null && newText.trim() !== '') {
+            notes[index].text = newText;
+            saveNotesToStorage(notes);
+            renderNotes();
+        }
+    }
+
     // Отрисовка заметок
     function renderNotes() {
         notesList.innerHTML = '';
@@ -88,11 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.className = 'note-item';
             li.innerText = note.text;
+
+            const editButton = document.createElement('span');
+            editButton.className = 'edit-button';
+            editButton.innerText = '✎'; // Символ редактирования
+            editButton.addEventListener('click', () => editNote(index));
+            li.appendChild(editButton);
+
             const deleteButton = document.createElement('span');
             deleteButton.className = 'delete-button';
             deleteButton.innerText = '×';
             deleteButton.addEventListener('click', () => removeNote(index));
             li.appendChild(deleteButton);
+
             notesList.appendChild(li);
         });
     }
